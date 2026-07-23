@@ -436,6 +436,7 @@
   </div>
   <div class="wrap footer-bottom">
     <span>© 2026 Team Mexico Resources</span>
+    <span><a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fteamcerbotics4400.github.io&count_bg=%23006847&title_bg=%23131313&icon=&icon_color=%23E7E7E7&title=visits&edge_flat=false"/></a></span>
     <span>Incheon, South Korea · FGC</span>
   </div>
   <div class="strip">
@@ -511,11 +512,11 @@
       preview:"images/Code_Explanation.png"
     },
     {
-      name:"Repositorio GitHub 2025",
+      name:"GitHub Repository",
       cat:"code",
-      desc:"Access the official Team Mexico GitHub repository with all the code and resources used during the 2025 season.",
+      desc:"Access the official Team Mexico GitHub repository with all the code and resources used during the competition season.",
       link:"https://github.com/TeamCerbotics4400/TeamMX2025",
-      preview:"images/Repositorio_GitHub_2025.png"
+      preview:"images/Repository.png"
     },
 
     // ── Documentation ──
@@ -586,6 +587,13 @@
       desc:"Complete walkthrough for assembling the entire robot from start to finish, including chassis, mechanisms, and electronics.",
       link:"https://youtu.be/GXWt1GoTAv8?si=obWzA8wwRqwVtM0l",
       preview:"images/Full_Assembly.png"
+    },
+    {
+      name:"Partner Climb",
+      cat:"tutorials",
+      desc:"A system designed to help your robot assist other robots in climbing during endgame — teamwork and mechanical design combined.",
+      link:"https://youtu.be/XC6mxsJvQT8?si=6vmmKniTHjzmOtbP",
+      preview:"images/Partner_Climb.png"
     },
     {
       name:"Programming",
@@ -688,9 +696,19 @@
     toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
   }
 
+  function isPdf(name) {
+    return name && name.toLowerCase().endsWith('.pdf');
+  }
+
   function handleAction(r) {
     if (r.link) {
       window.open(r.link, '_blank');
+      showToast('Opening ' + r.name + '...');
+      return;
+    }
+
+    if (isPdf(r.fileName)) {
+      window.open(r.filePath, '_blank');
       showToast('Opening ' + r.name + '...');
       return;
     }
@@ -743,10 +761,11 @@
         : (r.icon || defaultIcons[r.cat]);
 
       const isLink = !!r.link;
-      const btnIcon = isLink
+      const isViewer = !isLink && r.fileName && r.fileName.toLowerCase().endsWith('.pdf');
+      const btnIcon = isLink || isViewer
         ? `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M7 17l9-9M18 8v8M7 7H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1"/></svg>`
         : `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3v13m0 0l-5-5m5 5l5-5M4 21h16"/></svg>`;
-      const btnText = isLink ? 'Open' : 'Download';
+      const btnText = isLink ? 'Open' : isViewer ? 'View' : 'Download';
       const fileTag = r.fileLabel ? `<span class="filetag">${r.fileLabel}</span>` : '';
 
       card.innerHTML = `
