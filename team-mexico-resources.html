@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Mexico Resources — Robotics resource library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=League+Gothic:wght@400;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#000000;
+    --white:#ffffff;
+    --green:#006847;
+    --red:#ce1125;
+    --paper:#f6f4f0;
+    --ink:#131313;
+    --ink-soft:#5c5c5c;
+    --line:#e4e1da;
+    --card-bg:#ffffff;
+    --radius:14px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Sora', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{ display:block; max-width:100%; }
+
+  h1,h2,h3, .display{
+    font-family:'League Gothic', 'Anton', sans-serif;
+    font-weight:400;
+    text-transform:uppercase;
+    letter-spacing:.01em;
+    line-height:.92;
+    margin:0;
+  }
+  .wordmark{
+    font-family:'Anton', 'League Gothic', sans-serif;
+    text-transform:uppercase;
+  }
+
+  a{ color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  :focus-visible{
+    outline:3px solid var(--green);
+    outline-offset:3px;
+  }
+
+  .wrap{
+    max-width:1280px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  .diamond-field{
+    position:absolute; inset:0;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='%23CE1125' fill-opacity='0.55'%3E%3Cpath d='M70 6 L98 34 L118 34 L118 54 L134 70 L118 86 L118 106 L98 106 L70 134 L42 106 L22 106 L22 86 L6 70 L22 54 L22 34 L42 34 Z' /%3E%3Ccircle cx='70' cy='40' r='4'/%3E%3Ccircle cx='70' cy='100' r='4'/%3E%3Ccircle cx='40' cy='70' r='4'/%3E%3Ccircle cx='100' cy='70' r='4'/%3E%3Cpath d='M70 55 L82 70 L70 85 L58 70 Z' fill='%23000000' fill-opacity='0.5'/%3E%3C/g%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg fill='%23006847' fill-opacity='0.55'%3E%3Cpath d='M70 6 L98 34 L118 34 L118 54 L134 70 L118 86 L118 106 L98 106 L70 134 L42 106 L22 106 L22 86 L6 70 L22 54 L22 34 L42 34 Z' /%3E%3Ccircle cx='70' cy='40' r='4'/%3E%3Ccircle cx='70' cy='100' r='4'/%3E%3Ccircle cx='40' cy='70' r='4'/%3E%3Ccircle cx='100' cy='70' r='4'/%3E%3Cpath d='M70 55 L82 70 L70 85 L58 70 Z' fill='%23000000' fill-opacity='0.5'/%3E%3C/g%3E%3C/svg%3E");
+    background-position: 0 0, 70px 70px;
+    background-size: 140px 140px, 140px 140px;
+    opacity:.5;
+    pointer-events:none;
+  }
+
+  header.site{
+    position:sticky; top:0; z-index:40;
+    background:var(--black);
+    border-bottom:2px solid var(--green);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    height:72px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:12px;
+    color:var(--white);
+    text-decoration:none;
+  }
+  .brand-mark{
+    height:40px;
+    width:auto;
+    display:block;
+  }
+  .brand-text{
+    font-size:20px;
+    letter-spacing:.02em;
+  }
+  .brand-text b{ color:var(--white); }
+
+  nav.links{
+    display:flex; gap:28px;
+    font-size:14px;
+    font-weight:600;
+    color:#cfcfcf;
+  }
+  nav.links a{ text-decoration:none; padding:6px 0; border-bottom:2px solid transparent; }
+  nav.links a:hover, nav.links a.active{ color:var(--white); border-color:var(--red); }
+
+  .hero{
+    position:relative;
+    background:var(--black);
+    color:var(--white);
+    overflow:hidden;
+    padding:96px 0 88px;
+  }
+  .hero .wrap{ position:relative; z-index:2; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-size:12px; font-weight:700; letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--white);
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.25);
+    padding:8px 14px;
+    border-radius:999px;
+    margin-bottom:28px;
+  }
+  .eyebrow .dot{ width:7px; height:7px; border-radius:50%; background:var(--red); }
+
+  .hero h1{
+    font-size:clamp(52px, 8.5vw, 118px);
+    max-width:16ch;
+  }
+  .hero h1 .accent{ color:var(--white); -webkit-text-stroke:1.5px var(--red); }
+
+  .hero p.lead{
+    font-size:19px;
+    line-height:1.6;
+    color:#d8d8d8;
+    max-width:56ch;
+    margin:28px 0 40px;
+  }
+
+  .cat-rail{
+    background:var(--white);
+    border-bottom:1px solid var(--line);
+    position:sticky;
+    top:72px;
+    z-index:30;
+  }
+  .cat-scroll{
+    display:flex; gap:10px;
+    padding:18px 0;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .cat-scroll::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:none;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:9px 16px;
+    border-radius:999px;
+    border:1.5px solid var(--line);
+    background:var(--white);
+    font-size:13px; font-weight:600;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .chip:hover{ border-color:var(--ink); color:var(--ink); }
+  .chip.is-active{
+    background:var(--black); border-color:var(--black); color:var(--white);
+  }
+  .chip .swatch{
+    width:8px; height:8px; border-radius:2px; transform:rotate(45deg);
+  }
+
+  .results-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:36px 0 18px;
+    flex-wrap:wrap; gap:12px;
+  }
+  .results-bar .count{
+    font-family:'League Gothic', sans-serif;
+    font-size:26px;
+    letter-spacing:.01em;
+  }
+  .results-bar .count em{ font-style:normal; color:var(--green); }
+  .sort{
+    display:flex; align-items:center; gap:10px;
+    font-size:13px; color:var(--ink-soft);
+  }
+  .sort select{
+    font-family:'Sora', sans-serif;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:13px;
+    color:var(--ink);
+    background:var(--white);
+  }
+
+  .gallery{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:24px;
+    padding-bottom:100px;
+  }
+  @media (max-width:1100px){ .gallery{ grid-template-columns:repeat(3,1fr);} }
+  @media (max-width:820px){ .gallery{ grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .gallery{ grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    cursor:pointer;
+  }
+  .card:hover{
+    transform:translateY(-4px);
+    box-shadow:0 18px 32px -18px rgba(0,0,0,.28);
+    border-color:var(--ink);
+  }
+  .card .thumb{
+    aspect-ratio:4/3;
+    position:relative;
+    display:grid; place-items:center;
+    color:var(--white);
+    overflow:hidden;
+  }
+  .card .thumb svg.resource-icon{
+    width:48%;
+    height:48%;
+    opacity:.92;
+  }
+  .tone-red{ background:linear-gradient(155deg,#1c1c1c 0%, #3a0a10 60%, var(--red) 140%); }
+  .tone-green{ background:linear-gradient(155deg,#1c1c1c 0%, #0a2b1f 60%, var(--green) 140%); }
+  .tone-black{ background:linear-gradient(155deg,#000 0%, #232323 55%, #454545 140%); }
+
+  .card .body{
+    padding:18px 18px 20px;
+    display:flex; flex-direction:column; gap:10px; flex:1;
+  }
+  .badge-row{ display:flex; align-items:center; gap:8px; }
+  .badge{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-soft);
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 10px 5px 6px;
+  }
+  .badge .dot{ width:7px; height:7px; border-radius:2px; transform:rotate(45deg); }
+
+  .card h3{
+    font-family:'League Gothic', sans-serif;
+    font-size:24px;
+    text-transform:none;
+    letter-spacing:0;
+    line-height:1.05;
+  }
+  .card p{
+    font-size:13.5px;
+    line-height:1.55;
+    color:var(--ink-soft);
+    margin:0;
+    flex:1;
+  }
+  .card .foot{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:6px;
+  }
+  .filetag{
+    font-size:11px; font-weight:700; letter-spacing:.05em;
+    color:var(--ink-soft);
+  }
+  .filetag:empty{ display:none; }
+  .dl-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    background:var(--black); color:var(--white);
+    border:none; border-radius:9px;
+    padding:9px 14px;
+    font-size:12.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.03em;
+    pointer-events:auto;
+    position:relative;
+    z-index:2;
+  }
+  .dl-btn:hover{ background:var(--red); }
+  .dl-btn svg{ width:13px; height:13px; }
+
+  .empty-state{
+    display:none;
+    text-align:center;
+    padding:70px 20px;
+    border:1.5px dashed var(--line);
+    border-radius:var(--radius);
+    color:var(--ink-soft);
+  }
+  .empty-state h3{ font-size:26px; margin-bottom:8px; color:var(--ink); }
+
+  footer.site{
+    background:var(--black);
+    color:#cfcfcf;
+    position:relative;
+    overflow:hidden;
+    padding-top:64px;
+  }
+  .strip{
+    display:flex; height:8px;
+  }
+  .strip span{ flex:1; }
+  .strip span:nth-child(odd){ background:var(--red); }
+  .strip span:nth-child(even){ background:var(--green); }
+
+  .footer-top{
+    position:relative; z-index:2;
+    display:flex; justify-content:center;
+    padding-bottom:56px;
+    border-bottom:1px solid rgba(255,255,255,.12);
+  }
+  .footer-brand .wordmark{
+    color:var(--white);
+    font-size:30px;
+  }
+  .footer-brand p{
+    max-width:34ch; font-size:14px; color:#a3a3a3; line-height:1.6; margin-top:14px;
+  }
+  .footer-contact{ display:flex; gap:18px; margin-top:18px; }
+  .footer-contact a{ font-size:13px; font-weight:700; color:#d8d8d8; text-decoration:none; }
+  .footer-contact a:hover{ color:var(--white); }
+
+  .footer-bottom{
+    position:relative; z-index:2;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:24px 0 40px;
+    font-size:12.5px; color:#8a8a8a;
+    flex-wrap:wrap; gap:10px;
+  }
+
+  .toast{
+    position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(100px);
+    background:var(--black); color:var(--white);
+    padding:14px 24px; border-radius:12px;
+    font-size:14px; font-weight:600;
+    opacity:0; transition:all .35s ease;
+    z-index:100;
+    pointer-events:none;
+    white-space:nowrap;
+    box-shadow:0 8px 28px rgba(0,0,0,.25);
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition:none !important; scroll-behavior:auto !important; }
+  }
+
+  @media (max-width:640px){
+    .wrap{ padding:0 20px; }
+    nav.links{ display:none; }
+    .hero{ padding:64px 0 56px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <img class="brand-mark" src="images/team-mexico-logo.svg" alt="Team Mexico logo">
+      <span class="brand-text"><b>TEAM MEXICO</b> RESOURCES</span>
+    </a>
+    <nav class="links">
+      <a href="#gallery" class="active">Browse</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="diamond-field"></div>
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span> Open library for the FIRST Global community</span>
+    <h1>Robotics resources,<br>ready in seconds<span class="accent">.</span></h1>
+    <p class="lead">STEP files, applications, code, and documentation shared for free by Team Mexico for robotics teams around the world. No sign-up. No friction.</p>
+  </div>
+</section>
+
+<div class="cat-rail" id="categories">
+  <div class="wrap">
+    <div class="cat-scroll" id="catScroll">
+      <button class="chip is-active" data-cat="all">All</button>
+      <button class="chip" data-cat="step"><span class="swatch" style="background:var(--red)"></span>STEP Files</button>
+      <button class="chip" data-cat="apps"><span class="swatch" style="background:var(--green)"></span>Apps</button>
+      <button class="chip" data-cat="documentation"><span class="swatch" style="background:var(--black)"></span>Documentation</button>
+      <button class="chip" data-cat="tutorials"><span class="swatch" style="background:var(--red)"></span>Tutorials</button>
+      <button class="chip" data-cat="code"><span class="swatch" style="background:var(--green)"></span>Code</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="results-bar">
+    <div class="count"><em id="resultCount">14</em> resources found</div>
+    <div class="sort">
+      <label for="sortSelect">Sort by</label>
+      <select id="sortSelect">
+        <option value="recent">Most recent</option>
+        <option value="az">Name A–Z</option>
+        <option value="za">Name Z–A</option>
+      </select>
+    </div>
+  </div>
+
+  <section class="gallery" id="gallery"></section>
+
+  <div class="empty-state" id="emptyState">
+    <h3>No resources in this category yet</h3>
+    <p>Check back soon, or browse another category.</p>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<footer class="site">
+  <div class="wrap footer-top">
+    <div class="footer-brand">
+      <div class="wordmark">TEAM MEXICO<br>RESOURCES</div>
+      <p>A free digital library built by Team Mexico for the international robotics community.</p>
+      <div class="footer-contact">
+        <a href="https://instagram.com/teammexicofgc" target="_blank">Instagram</a>
+        <a href="https://www.youtube.com/@teammexicofgc3154" target="_blank">YouTube</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>© 2026 Team Mexico Resources</span>
+    <span>Incheon, South Korea · FGC</span>
+  </div>
+  <div class="strip">
+    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+</footer>
+
+<script>
+  // ===================================================================
+  //  DATA — This is the ONLY section you edit to add/modify resources.
+  //  To add a new resource, just append an object to the array below.
+  // ===================================================================
+
+  /*
+    ┌──────────────────────────────────────────────────────────────┐
+    │  Fields available per resource:                             │
+    │    name      — Display name                                │
+    │    cat       — "step" | "apps" | "code"                    │
+    │                "documentation" | "tutorials"                │
+    │    desc      — Short description                           │
+    │    fileLabel — Label shown next to the button              │
+    │    link      — URL to open (apps, tutorials → web/YT)      │
+    │    fileData  — Base64 content (step, code, docs)           │
+    │    fileName  — Filename when downloading                   │
+    │    preview   — Path to image, or "" for SVG icon           │
+    │    icon      — Optional custom SVG string                  │
+    └──────────────────────────────────────────────────────────────┘
+  */
+
+  const resources = [
+
+    // ── Apps (open a link) ──
+    {
+      name:"The Ball Counter",
+      cat:"apps",
+      desc:"Application that automatically counts how many balls your shooter fires per second, helping your team test, calibrate, and fine-tune shooter performance.",
+      link:"files/ball-counter.html",
+      preview:"images/The_Ball_Counter.png"
+    },
+
+    // ── STEP Files ──
+    {
+      name:"Battery Box",
+      cat:"step",
+      desc:"A box to store your batteries and keep your battery cycle organized.",
+      fileName:"Battery-Box.step",
+      fileData:"VGhpcyBpcyBhIHBsYWNlaG9sZGVyIGZvciB0aGUgQmF0dGVyeSBCb3ggU1RFUCBmaWxlLiBSZXBsYWNlIHdpdGggdGhlIHJlYWwgZmlsZS4=",
+      preview:"images/Battery_Box.png"
+    },
+    {
+      name:"Tool Cabinet",
+      cat:"step",
+      desc:"A box to keep all your equipment ready and organized.",
+      fileName:"Tool-Cabinet.step",
+      fileData:"VGhpcyBpcyBhIHBsYWNlaG9sZGVyIGZvciB0aGUgVG9vbCBDYWJpbmV0IFNURVAgZmlsZS4gUmVwbGFjZSB3aXRoIHRoZSByZWFsIGZpbGUu",
+      preview:"images/Tool_Cabinet.png"
+    },
+
+    // ── Code ──
+    {
+      name:"Programming Guide",
+      cat:"code",
+      desc:"Step-by-step guides for learning programming applied to robotics, from foundational concepts to competition-ready code.",
+      link:"https://teammexico.gitbook.io/teammexico-docs",
+      preview:"images/Programming_Guide.png"
+    },
+    {
+      name:"Code Explanation",
+      cat:"code",
+      desc:"Detailed breakdowns of how the code works — software architecture, control logic, and best practices explained clearly for every skill level.",
+      fileName:"Code-Explanation.pdf",
+      filePath:"files/code-explanation.pdf",
+      preview:"images/Code_Explanation.png"
+    },
+    {
+      name:"Repositorio GitHub 2025",
+      cat:"code",
+      desc:"Access the official Team Mexico GitHub repository with all the code and resources used during the 2025 season.",
+      link:"https://github.com/TeamCerbotics4400/TeamMX2025",
+      preview:"images/Repositorio_GitHub_2025.png"
+    },
+
+    // ── Documentation ──
+    {
+      name:"Drivers Playbook",
+      cat:"documentation",
+      desc:"A practical playbook covering driving techniques, match scenarios, and communication tips for your drive team.",
+      fileName:"Drivers-Playbook.pdf",
+      filePath:"files/drivers-playbook.pdf",
+      preview:"images/Drivers_Playbook.png"
+    },
+    {
+      name:"Engineering Notebook Example",
+      cat:"documentation",
+      desc:"A sample engineering notebook showing how to document design decisions, testing, and iteration throughout the season.",
+      fileName:"Engineering-Notebook.pdf",
+      filePath:"files/engineering-notebook.pdf",
+      preview:"images/Engineering_Notebook_Example.png"
+    },
+    {
+      name:"Strategy Map",
+      cat:"documentation",
+      desc:"A visual map to plan scoring strategies, robot roles, and match priorities before competition.",
+      fileName:"Strategy-Map.pdf",
+      filePath:"files/strategy-map.pdf",
+      preview:"images/Strategy_Map.png"
+    },
+
+    // ── Tutorials (open a YouTube video) ──
+    {
+      name:"Drivetrain",
+      cat:"tutorials",
+      desc:"Step-by-step tutorial for building and tuning a robust drivetrain from scratch.",
+      link:"https://youtu.be/BkRQ7Yfd-Mk?si=5IWKRtc-8vcEFRRI",
+      preview:"images/Drivetrain.png"
+    },
+    {
+      name:"Intake",
+      cat:"tutorials",
+      desc:"Learn how to design and build a reliable intake mechanism for game pieces.",
+      link:"https://youtu.be/zHKKc1md6QM?si=Bk7Ep8FAZh0u4Aa9",
+      preview:"images/Intake.png"
+    },
+    {
+      name:"Climber",
+      cat:"tutorials",
+      desc:"A guided tutorial for designing a climbing mechanism that scores reliably in the endgame.",
+      link:"https://youtu.be/il0bMKf3HHE?si=WwxWKMBGHFe-E96_",
+      preview:"images/Climber.png"
+    },
+    {
+      name:"Box Assembly",
+      cat:"tutorials",
+      desc:"Walkthrough for assembling your robot's main chassis box and internal structure.",
+      link:"https://youtu.be/033qbtI43Mk?si=6wkGBa2TWHU2JKgC",
+      preview:"images/Box_Assembly.png"
+    },
+    {
+      name:"Social Media",
+      cat:"tutorials",
+      desc:"Learn how to promote your team on social media, build a following, and share your robotics journey effectively.",
+      link:"https://youtu.be/vjjvihbHwVk?si=a-pbjKkUI6mbHIQQ",
+      preview:"images/Social_Media.png"
+    },
+    {
+      name:"Full Assembly",
+      cat:"tutorials",
+      desc:"Complete walkthrough for assembling the entire robot from start to finish, including chassis, mechanisms, and electronics.",
+      link:"https://youtu.be/GXWt1GoTAv8?si=obWzA8wwRqwVtM0l",
+      preview:"images/Full_Assembly.png"
+    },
+    {
+      name:"Programming",
+      cat:"tutorials",
+      desc:"An introductory tutorial to programming your robot's core functions and behaviors.",
+      link:"https://youtu.be/aF9mb4ejSMA?si=BbcpN-nxna1ltNXc",
+      preview:"images/Programming.png"
+    }
+  ];
+
+  // ===================================================================
+  //  CONFIG — category metadata: labels, colors, tones, default icons
+  // ===================================================================
+
+  const catLabels = {
+    step:"STEP Files", apps:"Apps", documentation:"Documentation",
+    tutorials:"Tutorials", code:"Code"
+  };
+
+  const catColor = {
+    step:"var(--red)", apps:"var(--green)", documentation:"var(--black)",
+    tutorials:"var(--red)", code:"var(--green)"
+  };
+
+  const catTone = {
+    step:"tone-red", apps:"tone-green", documentation:"tone-black",
+    tutorials:"tone-red", code:"tone-green"
+  };
+
+  // ---- Category default icons (used when a resource has no custom icon) ----
+  const defaultIcons = {
+
+    step: `<svg class="resource-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="12" y="38" width="56" height="32" rx="3" stroke="white" stroke-width="2.5"/>
+      <rect x="18" y="44" width="44" height="20" rx="2" stroke="white" stroke-width="1.8"/>
+      <circle cx="40" cy="54" r="4" fill="white" opacity=".3"/>
+      <path d="M28 38V28a12 12 0 0 1 24 0v10" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="28" cy="28" r="3" fill="white" opacity=".5"/>
+      <circle cx="52" cy="28" r="3" fill="white" opacity=".5"/>
+    </svg>`,
+
+    apps: `<svg class="resource-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="16" y="8" width="48" height="64" rx="6" stroke="white" stroke-width="2.5"/>
+      <rect x="22" y="16" width="36" height="28" rx="3" stroke="white" stroke-width="1.8"/>
+      <line x1="28" y1="54" x2="52" y2="54" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="28" y1="62" x2="44" y2="62" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+      <circle cx="40" cy="30" r="4" fill="white" opacity=".4"/>
+      <rect x="36" y="44" width="8" height="4" rx="1" fill="white" opacity=".3"/>
+    </svg>`,
+
+    documentation: `<svg class="resource-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M18 12h30l14 14v44H18V12z" stroke="white" stroke-width="2.5"/>
+      <path d="M48 12v14h14" stroke="white" stroke-width="2.2"/>
+      <line x1="26" y1="38" x2="54" y2="38" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="26" y1="46" x2="54" y2="46" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="26" y1="54" x2="42" y2="54" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="60" cy="60" r="10" stroke="white" stroke-width="2.2" fill="none"/>
+      <path d="M57 58l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`,
+
+    tutorials: `<svg class="resource-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M16 60V18a4 4 0 0 1 4-4h44v46" stroke="white" stroke-width="2.5"/>
+      <path d="M16 60a6 6 0 0 1 6-6h44" stroke="white" stroke-width="2.5"/>
+      <circle cx="34" cy="32" r="10" stroke="white" stroke-width="2.2"/>
+      <path d="M30 32l3 3 5-5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="52" y1="28" x2="60" y2="28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="52" y1="36" x2="58" y2="36" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="52" y1="44" x2="62" y2="44" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>`,
+
+    code: `<svg class="resource-icon" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="12" y="10" width="56" height="60" rx="4" stroke="white" stroke-width="2.5"/>
+      <line x1="22" y1="24" x2="34" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="22" y1="32" x2="46" y2="32" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="22" y1="40" x2="30" y2="40" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <path d="M46 44l6 6-6 6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M34 56l-6-6 6-6" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="58" cy="24" r="3" fill="white" opacity=".4"/>
+    </svg>`
+  };
+
+  // ===================================================================
+  //  RENDER logic — no need to touch this when adding resources
+  // ===================================================================
+
+  const galleryEl = document.getElementById('gallery');
+  const emptyEl = document.getElementById('emptyState');
+  const countEl = document.getElementById('resultCount');
+  const sortSelect = document.getElementById('sortSelect');
+  const chips = document.querySelectorAll('.chip');
+  const toastEl = document.getElementById('toast');
+
+  let activeCat = 'all';
+  let toastTimer = null;
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+  }
+
+  function handleAction(r) {
+    if (r.link) {
+      window.open(r.link, '_blank');
+      showToast('Opening ' + r.name + '...');
+      return;
+    }
+
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    document.body.appendChild(a);
+
+    if (r.fileData) {
+      const byteChars = atob(r.fileData);
+      const bytes = new Uint8Array(byteChars.length);
+      for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([bytes], { type:'application/octet-stream' });
+      a.href = URL.createObjectURL(blob);
+    } else {
+      a.href = r.filePath;
+    }
+    a.download = r.fileName;
+    a.click();
+    document.body.removeChild(a);
+    if (r.fileData) URL.revokeObjectURL(a.href);
+    showToast('Downloading ' + r.name + '...');
+  }
+
+  function render() {
+    let list = resources.filter(r => activeCat === 'all' || r.cat === activeCat);
+
+    const sortVal = sortSelect.value;
+    if (sortVal === 'az') list.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortVal === 'za') list.sort((a, b) => b.name.localeCompare(a.name));
+    else list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    countEl.textContent = list.length;
+    galleryEl.innerHTML = '';
+
+    if (list.length === 0) {
+      emptyEl.style.display = 'block';
+      galleryEl.style.display = 'none';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    galleryEl.style.display = 'grid';
+
+    list.forEach(r => {
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      const thumbInner = r.preview
+        ? `<img src="${r.preview}" alt="${r.name} preview" style="width:100%;height:100%;object-fit:cover;">`
+        : (r.icon || defaultIcons[r.cat]);
+
+      const isLink = !!r.link;
+      const btnIcon = isLink
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M7 17l9-9M18 8v8M7 7H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1"/></svg>`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3v13m0 0l-5-5m5 5l5-5M4 21h16"/></svg>`;
+      const btnText = isLink ? 'Open' : 'Download';
+      const fileTag = r.fileLabel ? `<span class="filetag">${r.fileLabel}</span>` : '';
+
+      card.innerHTML = `
+        <div class="thumb ${catTone[r.cat]}">${thumbInner}</div>
+        <div class="body">
+          <div class="badge-row">
+            <span class="badge"><span class="dot" style="background:${catColor[r.cat]}"></span>${catLabels[r.cat]}</span>
+          </div>
+          <h3>${r.name}</h3>
+          <p>${r.desc}</p>
+          <div class="foot">
+            ${fileTag}
+            <button class="dl-btn">
+              ${btnIcon}
+              ${btnText}
+            </button>
+          </div>
+        </div>`;
+
+      const dlBtn = card.querySelector('.dl-btn');
+      dlBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        handleAction(r);
+      });
+
+      card.addEventListener('click', function () {
+        handleAction(r);
+      });
+
+      galleryEl.appendChild(card);
+    });
+  }
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('is-active'));
+      chip.classList.add('is-active');
+      activeCat = chip.dataset.cat;
+      render();
+    });
+  });
+
+  sortSelect.addEventListener('change', render);
+
+  render();
+</script>
+
+</body>
+</html>
