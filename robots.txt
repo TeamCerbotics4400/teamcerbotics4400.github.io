@@ -1,4 +1,525 @@
-User-agent: *
-Allow: /
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FTC 2026 - Autonomous AI Scouting System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+            redAlliance: '#ef4444',
+            blueAlliance: '#3b82f6',
+            greenBall: '#22c55e',
+            purpleBall: '#a855f7'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.08); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
 
-Sitemap: https://fgcmexico.com/sitemap.xml
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="p-2 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/30">
+        <i class="fa-solid fa-robot text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+          FTC 2026 AutoScout AI
+          <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v1.1 Heatmap & Export</span>
+        </h1>
+        <p class="text-xs text-slate-400">Sistema Autónomo de Visión por Computadora & Analytics</p>
+      </div>
+    </div>
+
+    <!-- Match Selector & Export Actions -->
+    <div class="flex items-center gap-2">
+      <select id="matchSelect" class="bg-slate-800 border border-slate-700 text-sm rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-blue-500">
+        <option value="m1">Match 12 - Quals (Roja vs Azul)</option>
+        <option value="m2">Match 24 - Semifinal 1</option>
+        <option value="m3">Match 45 - Final 2</option>
+      </select>
+      <button onclick="exportCSV()" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg flex items-center gap-2 transition">
+        <i class="fa-solid fa-file-excel"></i> Exportar CSV/Excel
+      </button>
+      <button onclick="exportJSON()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 flex items-center gap-2 transition">
+        <i class="fa-solid fa-download"></i> JSON
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Left Column: Field Visualizer & Heatmap (7 Cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-6">
+      
+      <!-- Visualizer Card -->
+      <div class="glass-card rounded-2xl p-4 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span id="canvasTitle">Vista de Cancha - Tracking Live CV</span>
+          </div>
+          
+          <!-- View Mode Toggle (Live Tracking vs Heatmap) -->
+          <div class="flex items-center gap-2 bg-slate-900 p-1 rounded-lg border border-slate-800">
+            <button id="btnViewLive" onclick="setViewMode('LIVE')" class="px-2.5 py-1 text-xs font-bold rounded bg-blue-600 text-white transition">
+              <i class="fa-solid fa-video mr-1"></i> Live Tracking
+            </button>
+            <button id="btnViewHeatmap" onclick="setViewMode('HEATMAP')" class="px-2.5 py-1 text-xs font-bold rounded text-slate-400 hover:text-white transition">
+              <i class="fa-solid fa-fire mr-1"></i> Mapa de Calor 2D
+            </button>
+          </div>
+        </div>
+
+        <!-- 2D Canvas Simulation -->
+        <div class="relative aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+          <canvas id="fieldCanvas" width="800" height="450" class="w-full h-full object-contain"></canvas>
+          
+          <!-- Overlay Info / Legend -->
+          <div id="canvasOverlay" class="absolute bottom-3 left-3 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-lg p-2 text-xs flex gap-4 text-slate-300">
+            <div><span class="text-slate-500">FPS:</span> <span class="font-mono text-emerald-400">59.8</span></div>
+            <div><span class="text-slate-500">Latencia:</span> <span class="font-mono text-blue-400">4.2 ms</span></div>
+            <div><span class="text-slate-500">Tracking:</span> <span class="font-mono text-purple-400">4/4 Robots</span></div>
+          </div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="flex items-center gap-4 bg-slate-900/50 p-3 rounded-xl border border-slate-800/80">
+          <button id="playBtn" onclick="togglePlay()" class="w-10 h-10 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition">
+            <i id="playIcon" class="fa-solid fa-play"></i>
+          </button>
+          
+          <div class="flex-1 flex flex-col gap-1">
+            <div class="flex justify-between text-xs text-slate-400">
+              <span id="timeCurrent">00:00</span>
+              <div class="flex gap-2 font-mono text-[10px]">
+                <span class="text-amber-400">[0-30s Auto]</span>
+                <span class="text-blue-400">[30-120s TeleOp]</span>
+                <span class="text-rose-400">[120-150s Endgame]</span>
+              </div>
+              <span>02:30</span>
+            </div>
+            <input type="range" id="timeSlider" min="0" max="150" value="0" step="0.5" oninput="seekTime(this.value)" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase Filter -->
+      <div class="flex items-center justify-between gap-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+        <span class="text-xs font-semibold text-slate-400 px-2">Filtrar Fase:</span>
+        <div class="flex gap-2">
+          <button onclick="setPhaseFilter('ALL')" id="btnFilterALL" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition">Todas</button>
+          <button onclick="setPhaseFilter('AUTO')" id="btnFilterAUTO" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition">Autonomous</button>
+          <button onclick="setPhaseFilter('TELEOP')" id="btnFilterTELEOP" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition">TeleOp</button>
+          <button onclick="setPhaseFilter('ENDGAME')" id="btnFilterENDGAME" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition">Endgame</button>
+        </div>
+      </div>
+
+      <!-- Alliance Overview Cards -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-l-red-500">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-bold text-red-400 uppercase tracking-wider">Alianza Roja</span>
+            <span id="redScore" class="text-2xl font-black text-white">0 pts</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+            <div class="bg-slate-900/50 p-2 rounded">Disparos: <b id="redShots">0</b></div>
+            <div class="bg-slate-900/50 p-2 rounded">Precisión: <b id="redAcc">0%</b></div>
+            <div class="bg-slate-900/50 p-2 rounded text-emerald-400">Verdes: <b id="redGreen">0</b></div>
+            <div class="bg-slate-900/50 p-2 rounded text-purple-400">Moradas: <b id="redPurple">0</b></div>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-2xl p-4 border-l-4 border-l-blue-500">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-bold text-blue-400 uppercase tracking-wider">Alianza Azul</span>
+            <span id="blueScore" class="text-2xl font-black text-white">0 pts</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs text-slate-300">
+            <div class="bg-slate-900/50 p-2 rounded">Disparos: <b id="blueShots">0</b></div>
+            <div class="bg-slate-900/50 p-2 rounded">Precisión: <b id="blueAcc">0%</b></div>
+            <div class="bg-slate-900/50 p-2 rounded text-emerald-400">Verdes: <b id="blueGreen">0</b></div>
+            <div class="bg-slate-900/50 p-2 rounded text-purple-400">Moradas: <b id="bluePurple">0</b></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Right Column: Robot Breakdown & Chart (5 Cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-6">
+
+      <div class="glass-card rounded-2xl p-5 flex flex-col gap-4">
+        <h2 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-chart-simple text-blue-400"></i> Estadísticas Detalladas por Robot
+        </h2>
+        <div id="robotsContainer" class="flex flex-col gap-3"></div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-5 flex flex-col gap-3">
+        <h3 class="text-sm font-bold text-slate-300">Comparativa de Disparos Anotados vs Fallados</h3>
+        <div class="h-48 relative">
+          <canvas id="shotsChart"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const matchData = {
+      m1: {
+        robots: [
+          { team: 11115, name: "Gluten Free", alliance: "RED", auto: { green: 4, purple: 2, missed: 0, gate: 1, park: "FULLY_PARKED" }, teleop: { green: 10, purple: 6, missed: 2, gate: 2, park: "FULLY_PARKED" }, endgame: { green: 3, purple: 2, missed: 1, gate: 0, park: "FULLY_PARKED" } },
+          { team: 14320, name: "Antares", alliance: "RED", auto: { green: 2, purple: 1, missed: 1, gate: 0, park: "PARTIALLY_PARKED" }, teleop: { green: 6, purple: 4, missed: 3, gate: 1, park: "FULLY_PARKED" }, endgame: { green: 2, purple: 1, missed: 0, gate: 0, park: "FULLY_PARKED" } },
+          { team: 8417, name: "Lexington", alliance: "BLUE", auto: { green: 5, purple: 3, missed: 0, gate: 1, park: "FULLY_PARKED" }, teleop: { green: 12, purple: 8, missed: 1, gate: 3, park: "FULLY_PARKED" }, endgame: { green: 4, purple: 2, missed: 0, gate: 0, park: "FULLY_PARKED" } },
+          { team: 18219, name: "Primitive", alliance: "BLUE", auto: { green: 1, purple: 1, missed: 2, gate: 0, park: "NOT_PARKED" }, teleop: { green: 4, purple: 3, missed: 4, gate: 0, park: "PARTIALLY_PARKED" }, endgame: { green: 1, purple: 1, missed: 1, gate: 0, park: "PARTIALLY_PARKED" } }
+        ]
+      }
+    };
+
+    // Shot coordinates for 2D Heatmap simulation
+    const shotLocations = [
+      { x: 140, y: 110, team: 11115, scored: true }, { x: 155, y: 125, team: 11115, scored: true }, { x: 130, y: 100, team: 11115, scored: true }, { x: 160, y: 140, team: 11115, scored: false },
+      { x: 200, y: 260, team: 14320, scored: true }, { x: 210, y: 280, team: 14320, scored: false }, { x: 190, y: 270, team: 14320, scored: true },
+      { x: 600, y: 160, team: 8417,  scored: true }, { x: 620, y: 140, team: 8417,  scored: true }, { x: 610, y: 180, team: 8417,  scored: true }, { x: 590, y: 150, team: 8417,  scored: true },
+      { x: 540, y: 310, team: 18219, scored: false }, { x: 520, y: 300, team: 18219, scored: true }, { x: 530, y: 330, team: 18219, scored: false }
+    ];
+
+    let currentTime = 0;
+    let isPlaying = false;
+    let activePhaseFilter = 'ALL';
+    let viewMode = 'LIVE'; // 'LIVE' or 'HEATMAP'
+    let timerInterval = null;
+    let chartInstance = null;
+
+    const canvas = document.getElementById('fieldCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function initChart() {
+      const ctxChart = document.getElementById('shotsChart').getContext('2d');
+      chartInstance = new Chart(ctxChart, {
+        type: 'bar',
+        data: {
+          labels: ['11115', '14320', '8417', '18219'],
+          datasets: [
+            { label: 'Anotados', data: [0, 0, 0, 0], backgroundColor: '#22c55e' },
+            { label: 'Fallados', data: [0, 0, 0, 0], backgroundColor: '#ef4444' }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+            y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+          },
+          plugins: { legend: { labels: { color: '#cbd5e1' } } }
+        }
+      });
+    }
+
+    function getRobotMetrics(robot, filterPhase) {
+      let green = 0, purple = 0, missed = 0, gate = 0;
+      let parking = robot.endgame.park;
+
+      const phases = filterPhase === 'ALL' ? ['auto', 'teleop', 'endgame'] : [filterPhase.toLowerCase()];
+      phases.forEach(p => {
+        if(robot[p]) {
+          green += robot[p].green;
+          purple += robot[p].purple;
+          missed += robot[p].missed;
+          gate += robot[p].gate;
+        }
+      });
+
+      const scored = green + purple;
+      const totalShots = scored + missed;
+      const accuracy = totalShots > 0 ? ((scored / totalShots) * 100).toFixed(1) : '0.0';
+
+      return { green, purple, scored, missed, totalShots, accuracy, gate, parking };
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      const btnLive = document.getElementById('btnViewLive');
+      const btnHeatmap = document.getElementById('btnViewHeatmap');
+      const title = document.getElementById('canvasTitle');
+
+      if(mode === 'LIVE') {
+        btnLive.className = 'px-2.5 py-1 text-xs font-bold rounded bg-blue-600 text-white transition';
+        btnHeatmap.className = 'px-2.5 py-1 text-xs font-bold rounded text-slate-400 hover:text-white transition';
+        title.innerText = 'Vista de Cancha - Tracking Live CV';
+        document.getElementById('canvasOverlay').style.display = 'flex';
+      } else {
+        btnHeatmap.className = 'px-2.5 py-1 text-xs font-bold rounded bg-blue-600 text-white transition';
+        btnLive.className = 'px-2.5 py-1 text-xs font-bold rounded text-slate-400 hover:text-white transition';
+        title.innerText = 'Vista de Cancha - Mapa de Calor 2D de Zonas de Disparo';
+        document.getElementById('canvasOverlay').style.display = 'none';
+      }
+      drawFieldCanvas();
+    }
+
+    function updateUI() {
+      const currentMatch = matchData.m1;
+      const robotsContainer = document.getElementById('robotsContainer');
+      robotsContainer.innerHTML = '';
+
+      let redTotalScored = 0, redTotalShots = 0, redGreen = 0, redPurple = 0;
+      let blueTotalScored = 0, blueTotalShots = 0, blueGreen = 0, bluePurple = 0;
+
+      const chartScored = [];
+      const chartMissed = [];
+
+      currentMatch.robots.forEach((robot) => {
+        const m = getRobotMetrics(robot, activePhaseFilter);
+
+        chartScored.push(m.scored);
+        chartMissed.push(m.missed);
+
+        if(robot.alliance === 'RED') {
+          redTotalScored += m.scored;
+          redTotalShots += m.totalShots;
+          redGreen += m.green;
+          redPurple += m.purple;
+        } else {
+          blueTotalScored += m.scored;
+          blueTotalShots += m.totalShots;
+          blueGreen += m.green;
+          bluePurple += m.purple;
+        }
+
+        const isRed = robot.alliance === 'RED';
+        const cardBorder = isRed ? 'border-red-500/30 bg-red-950/10' : 'border-blue-500/30 bg-blue-950/10';
+        const badgeColor = isRed ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400';
+
+        const parkLabel = m.parking === 'FULLY_PARKED' ? 'COMPLETO' : (m.parking === 'PARTIALLY_PARKED' ? 'PARCIAL' : 'NO');
+        const parkColor = m.parking === 'FULLY_PARKED' ? 'text-emerald-400' : (m.parking === 'PARTIALLY_PARKED' ? 'text-amber-400' : 'text-rose-400');
+
+        robotsContainer.innerHTML += `
+          <div class="p-3.5 rounded-xl border ${cardBorder} flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-2 py-0.5 rounded font-bold ${badgeColor}">#${robot.team}</span>
+                <span class="text-sm font-semibold text-white">${robot.name}</span>
+              </div>
+              <span class="text-xs font-mono font-bold text-slate-300">Precisión: ${m.accuracy}%</span>
+            </div>
+            <div class="grid grid-cols-4 gap-2 text-center text-xs mt-1">
+              <div class="bg-slate-900/60 p-1.5 rounded">
+                <span class="text-slate-400 block text-[10px]">Disparos</span>
+                <b class="text-white">${m.scored}/${m.totalShots}</b>
+              </div>
+              <div class="bg-slate-900/60 p-1.5 rounded">
+                <span class="text-emerald-400 block text-[10px]">Verde/Morada</span>
+                <b class="text-white">${m.green} / ${m.purple}</b>
+              </div>
+              <div class="bg-slate-900/60 p-1.5 rounded">
+                <span class="text-slate-400 block text-[10px]">Gate Opens</span>
+                <b class="text-white">${m.gate}</b>
+              </div>
+              <div class="bg-slate-900/60 p-1.5 rounded">
+                <span class="text-slate-400 block text-[10px]">Endgame</span>
+                <b class="${parkColor}">${parkLabel}</b>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('redScore').innerText = `${redTotalScored * 5} pts`;
+      document.getElementById('redShots').innerText = `${redTotalScored}/${redTotalShots}`;
+      document.getElementById('redAcc').innerText = redTotalShots > 0 ? `${((redTotalScored/redTotalShots)*100).toFixed(0)}%` : '0%';
+      document.getElementById('redGreen').innerText = redGreen;
+      document.getElementById('redPurple').innerText = redPurple;
+
+      document.getElementById('blueScore').innerText = `${blueTotalScored * 5} pts`;
+      document.getElementById('blueShots').innerText = `${blueTotalShots}/${blueTotalShots}`;
+      document.getElementById('blueAcc').innerText = blueTotalShots > 0 ? `${((blueTotalScored/blueTotalShots)*100).toFixed(0)}%` : '0%';
+      document.getElementById('blueGreen').innerText = blueGreen;
+      document.getElementById('bluePurple').innerText = bluePurple;
+
+      if(chartInstance) {
+        chartInstance.data.datasets[0].data = chartScored;
+        chartInstance.data.datasets[1].data = chartMissed;
+        chartInstance.update();
+      }
+
+      drawFieldCanvas();
+    }
+
+    function drawFieldCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw FTC Field Floor Grid
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1;
+      for(let x=0; x<canvas.width; x+=50) {
+        ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+      }
+      for(let y=0; y<canvas.height; y+=50) {
+        ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke();
+      }
+
+      // Draw Goals
+      ctx.fillStyle = 'rgba(239,68,68,0.2)'; ctx.fillRect(20, 20, 80, 80);
+      ctx.fillStyle = 'rgba(59,130,246,0.2)'; ctx.fillRect(canvas.width - 100, canvas.height - 100, 80, 80);
+
+      if(viewMode === 'LIVE') {
+        // Draw Animated Tracking Vectors & Robots
+        const robotsPos = [
+          { x: 120 + Math.sin(currentTime)*30, y: 100 + Math.cos(currentTime)*20, color: '#ef4444', label: '11115 [RED 1]' },
+          { x: 180 + Math.cos(currentTime)*40, y: 280 + Math.sin(currentTime)*30, color: '#f87171', label: '14320 [RED 2]' },
+          { x: 620 - Math.sin(currentTime)*35, y: 150 + Math.cos(currentTime)*25, color: '#3b82f6', label: '8417 [BLUE 1]' },
+          { x: 550 - Math.cos(currentTime)*30, y: 320 - Math.sin(currentTime)*20, color: '#60a5fa', label: '18219 [BLUE 2]' }
+        ];
+
+        robotsPos.forEach(r => {
+          ctx.strokeStyle = r.color; ctx.lineWidth = 2;
+          ctx.strokeRect(r.x, r.y, 50, 50);
+          ctx.fillStyle = r.color; ctx.font = 'bold 10px sans-serif';
+          ctx.fillText(r.label, r.x, r.y - 6);
+          ctx.beginPath(); ctx.moveTo(r.x + 25, r.y + 25);
+          ctx.lineTo(r.x + 25 + Math.sin(currentTime*2)*40, r.y + 25 + Math.cos(currentTime*2)*40);
+          ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.stroke();
+        });
+
+        if(isPlaying) {
+          ctx.fillStyle = '#22c55e'; ctx.beginPath();
+          ctx.arc(200 + (currentTime*15)%400, 120 + Math.sin(currentTime*5)*30, 6, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = '#a855f7'; ctx.beginPath();
+          ctx.arc(580 - (currentTime*12)%350, 220 + Math.cos(currentTime*4)*20, 6, 0, Math.PI*2); ctx.fill();
+        }
+      } else {
+        // Render 2D Shot Density Heatmap Overlay
+        shotLocations.forEach(pt => {
+          const grad = ctx.createRadialGradient(pt.x, pt.y, 2, pt.x, pt.y, 35);
+          if(pt.scored) {
+            grad.addColorStop(0, 'rgba(34, 197, 94, 0.8)');
+            grad.addColorStop(0.5, 'rgba(34, 197, 94, 0.3)');
+            grad.addColorStop(1, 'rgba(34, 197, 94, 0)');
+          } else {
+            grad.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+            grad.addColorStop(0.5, 'rgba(239, 68, 68, 0.3)');
+            grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+          }
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 35, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Dot Center
+          ctx.fillStyle = pt.scored ? '#22c55e' : '#ef4444';
+          ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2); ctx.fill();
+        });
+
+        // Heatmap Legend
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fillRect(15, canvas.height - 40, 240, 30);
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)'; ctx.strokeRect(15, canvas.height - 40, 240, 30);
+        
+        ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(28, canvas.height - 25, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#f8fafc'; ctx.font = '11px sans-serif'; ctx.fillText('Zona Disparo Anotado', 38, canvas.height - 21);
+
+        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(155, canvas.height - 25, 5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#f8fafc'; ctx.font = '11px sans-serif'; ctx.fillText('Zona Fallo', 165, canvas.height - 21);
+      }
+    }
+
+    function exportCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Equipo,Nombre,Alianza,Fase,Disparos Totales,Anotados,Fallados,Precision (%),Pelotas Verdes,Pelotas Moradas,Aperturas Gate,Estacionamiento\n";
+
+      matchData.m1.robots.forEach(r => {
+        ['ALL', 'AUTO', 'TELEOP', 'ENDGAME'].forEach(phase => {
+          const m = getRobotMetrics(r, phase);
+          csvContent += `${r.team},"${r.name}",${r.alliance},${phase},${m.totalShots},${m.scored},${m.missed},${m.accuracy},${m.green},${m.purple},${m.gate},${m.parking}\n`;
+        });
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `FTC2026_Match12_Scouting_Report.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    function exportJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(matchData.m1, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "ftc2026_match12_scouting.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      const playIcon = document.getElementById('playIcon');
+      if(isPlaying) {
+        playIcon.className = 'fa-solid fa-pause';
+        timerInterval = setInterval(() => {
+          currentTime = (currentTime + 0.5) % 150;
+          document.getElementById('timeSlider').value = currentTime;
+          updatePlaybackTime();
+        }, 100);
+      } else {
+        playIcon.className = 'fa-solid fa-play';
+        clearInterval(timerInterval);
+      }
+    }
+
+    function seekTime(val) {
+      currentTime = parseFloat(val);
+      updatePlaybackTime();
+    }
+
+    function updatePlaybackTime() {
+      const mins = Math.floor(currentTime / 60).toString().padStart(2, '0');
+      const secs = Math.floor(currentTime % 60).toString().padStart(2, '0');
+      document.getElementById('timeCurrent').innerText = `${mins}:${secs}`;
+
+      drawFieldCanvas();
+    }
+
+    function setPhaseFilter(phase) {
+      activePhaseFilter = phase;
+      ['ALL', 'AUTO', 'TELEOP', 'ENDGAME'].forEach(p => {
+        const btn = document.getElementById(`btnFilter${p}`);
+        btn.className = (p === phase) 
+          ? 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white transition' 
+          : 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white transition';
+      });
+      updateUI();
+    }
+
+    window.onload = () => {
+      initChart();
+      updateUI();
+      updatePlaybackTime();
+    };
+  </script>
+</body>
+</html>
